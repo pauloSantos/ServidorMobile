@@ -12,26 +12,14 @@ import com.site.dao.PrincipalDAO;
 
 public class DietaDAO extends PrincipalDAO implements IDietaDAO{
 
-	private static final String NOME_DIETA = "nomeDieta";
-	
-	private static final String ENCONTRAR_DIETA_POR_NOME_EXATO = 
-			"select obj from " + DietaModel.class.getName() + " obj" +
-					" where obj.nomeDieta =:" + NOME_DIETA;
+	private static final String ID_DIETA = "idDieta";
 
 	private static final String ENCONTRAR_DIETAS_DISPONIVEIS =
 			"select obj from " + DietaModel.class.getName() + " obj";
 	
-	@Override
-	public DietaModel encontrarDietaPorNomeExato(String nomeDieta) {
-		Query query = getEntityManager().createQuery(ENCONTRAR_DIETA_POR_NOME_EXATO);
-		query.setParameter(NOME_DIETA, nomeDieta);
-		try {
-			return (DietaModel) query.getSingleResult();
-		} catch (NoResultException e) {
-			return null;
-		}
-		
-	}
+	private static final String ENCONTRAR_DIETA_POR_ID =
+			"select obj from " + DietaModel.class.getName() + " obj" +
+			" where obj.id =:" + ID_DIETA;
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -41,6 +29,17 @@ public class DietaDAO extends PrincipalDAO implements IDietaDAO{
 			return query.getResultList();
 		} catch (NoResultException e) {
 			return new ArrayList<DietaModel>();
+		}
+	}
+	
+	@Override
+	public DietaModel encontrarDietaPorId(Long id) {
+		Query query = getEntityManager().createQuery(ENCONTRAR_DIETA_POR_ID);
+		query.setParameter(ID_DIETA, id);
+		try {
+			return (DietaModel) query.getSingleResult();
+		} catch (NoResultException e) {
+			return null;
 		}
 	}
 }

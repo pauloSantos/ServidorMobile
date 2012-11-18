@@ -3,13 +3,16 @@ package com.dieta.vida.resource;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.dieta.vida.dao.AlimentoDAO;
@@ -43,32 +46,47 @@ public class MobileResource {
 	}
 
 	@GET
-	@Path("/download/{nomeDieta}")
+	@Path("/download/{idDieta}")
 	@Produces(MediaType.APPLICATION_XML)
-	public DietaXML getDietaEscolhida(@PathParam("nomeDieta") String nomeDieta){
+	public DietaXML getDietaEscolhida(@PathParam("idDieta") String idDietaStr){
 		DietaXML dietaXML = new DietaXML();
 		IDietaDAO dietaDAO = new DietaDAO();
-		DietaModel dieta = dietaDAO.encontrarDietaPorNomeExato(nomeDieta);
+		Long idDieta = Long.parseLong(idDietaStr);
+		
+		DietaModel dieta = dietaDAO.encontrarDietaPorId(idDieta);
 		
 		if(dieta != null){
 			List<RefeicaoXML> listaRefeicaoXML = criarRefeicaoXML(dieta);
+			dietaXML.setIdentificacaoDieta(dieta.getId());
 			dietaXML.setNomeDieta(dieta.getNomeDieta());
 			dietaXML.setDuracao(dieta.getPeriodoDieta());
 			dietaXML.setRefeicoes(listaRefeicaoXML);
 		}
 		return dietaXML;
 	}
+	
+	@POST
+	@Path("/perfil")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response gravarPerfil(String perfilJson){
+		System.out.println("====================================");
+		System.out.println("PARABENS VOCE CHEGOU ATE AQUI!!!!");
+		System.out.println("====================================");
+		
+		return Response.ok().build();
+	} 
 
 	@GET
 	@Path("/dietas/disponiveis")
 	public DietasDisponiveisXML getDietasDisponiveis(){
+		System.out.println("Voce esta no recurso /resource/mobile/dietas/disponiveis");
 		IDietaDAO dietaDAO = new DietaDAO();
 		List<DietaModel> listaDietasDisponiveis = dietaDAO.encontrarTodasAsDietasDisponiveis();
 		List<DietaXML> listaDietaXML = new ArrayList<DietaXML>();
 		
 		for (DietaModel dieta : listaDietasDisponiveis) {
 			DietaXML dietaXML = new DietaXML();
-			dietaXML.setId(dieta.getId());
+			dietaXML.setIdentificacaoDieta(dieta.getId());
 			dietaXML.setNomeDieta(dieta.getNomeDieta());
 			listaDietaXML.add(dietaXML);
 		}

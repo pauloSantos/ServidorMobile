@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DietaXML {
 
 	@XmlElement
-	private Long id;
+	private Long identificacaoDieta;
 	
 	@XmlElement(name="nome")
 	private String nomeDieta;
@@ -25,12 +25,12 @@ public class DietaXML {
 	@XmlElementWrapper(name="refeicoes")
 	private List<RefeicaoXML> refeicao;
 	
-	public Long getId() {
-		return id;
+	public Long getIdentificacaoDieta() {
+		return identificacaoDieta;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setIdentificacaoDieta(Long id) {
+		this.identificacaoDieta = id;
 	}
 
 	public String getNomeDieta() {
