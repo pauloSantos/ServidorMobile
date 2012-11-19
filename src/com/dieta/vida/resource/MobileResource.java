@@ -1,7 +1,6 @@
 package com.dieta.vida.resource;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -16,25 +15,21 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.dieta.vida.business.DownloadDietaMobileBusiness;
+import com.dieta.vida.business.IDownloadDietaMobileBusiness;
 import com.dieta.vida.dao.AlimentoDAO;
 import com.dieta.vida.dao.DietaDAO;
-import com.dieta.vida.dao.DownloadDietaMobileDAO;
 import com.dieta.vida.dao.IAlimentoDAO;
 import com.dieta.vida.dao.IDietaDAO;
 import com.dieta.vida.dao.IRefeicaoDAO;
 import com.dieta.vida.dao.RefeicaoDAO;
 import com.dieta.vida.model.AlimentoModel;
 import com.dieta.vida.model.DietaModel;
-import com.dieta.vida.model.DownloadDietaModel;
-import com.dieta.vida.model.Perfil;
 import com.dieta.vida.model.RefeicaoModel;
 import com.dieta.vida.xml.AlimentoXML;
 import com.dieta.vida.xml.DietaXML;
 import com.dieta.vida.xml.DietasDisponiveisXML;
 import com.dieta.vida.xml.RefeicaoXML;
-import com.google.gson.Gson;
-import com.site.business.enums.Genero;
-import com.site.business.enums.StatusDieta;
 
 @Path("/mobile")
 public class MobileResource {
@@ -56,6 +51,9 @@ public class MobileResource {
 	@Path("/download/{idDieta}")
 	@Produces(MediaType.APPLICATION_XML)
 	public DietaXML getDietaEscolhida(@PathParam("idDieta") String idDietaStr){
+		System.out.println("====================================");
+		System.out.println("RECURSO: /resource/mobile/download/" + idDietaStr);
+		System.out.println("====================================");
 		DietaXML dietaXML = new DietaXML();
 		IDietaDAO dietaDAO = new DietaDAO();
 		Long idDieta = Long.parseLong(idDietaStr);
@@ -77,59 +75,33 @@ public class MobileResource {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response gravarPerfil(String perfilJson){
 		System.out.println("====================================");
-		System.out.println("RECURSO: /resource/mobile/perfil");
+		System.out.println("RECURSO: /resource/mobile/perfil/criacao");
 		System.out.println("====================================");
-
-		
-		
-		criarDownloadDieta(perfilJson);
+		IDownloadDietaMobileBusiness downloadDietaMobileBusiness = new DownloadDietaMobileBusiness();
+		downloadDietaMobileBusiness.criarDownloadDieta(perfilJson);
 
 		return Response.ok().build();
 	}
-
-	private void criarDownloadDieta(String perfilJson) {
-		DownloadDietaMobileDAO downloadDietaDAO = new DownloadDietaMobileDAO();
-		Gson gson = new Gson();
-		Perfil perfil = gson.fromJson(perfilJson, Perfil.class);
+	
+	@POST
+	@Path("/perfil/atualizacao/{statusDieta}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response atualizarPerfil(@PathParam("statusDieta") String statusDietaStr, String perfilJson){
+		System.out.println("====================================");
+		System.out.println("RECURSO: /resource/mobile/perfil/atualizacao/" + statusDietaStr);
+		System.out.println("====================================");
+		IDownloadDietaMobileBusiness downloadDietaMobileBusiness = new DownloadDietaMobileBusiness();
+		downloadDietaMobileBusiness.atualizarDownloadDieta(perfilJson, statusDietaStr);
 		
-		DownloadDietaModel downloadDietaAntigo = downloadDietaDAO.encontrarDownloadPorIdentificacaoEStatus(perfil.getIdPerfil(), StatusDieta.FAZENDO);
-		
-		if(downloadDietaAntigo != null){
-			downloadDietaAntigo.setStatusDieta(StatusDieta.NAO_FEITA);
-			downloadDietaDAO.atualizar(downloadDietaAntigo);
-		}
-		
-		DownloadDietaModel downloadDieta = new DownloadDietaModel();
-		downloadDieta.setImei(perfil.getIdPerfil());
-		downloadDieta.setDataSolicitacao(new Date());
-		downloadDieta.setDataUltimaAtualizacao(new Date());
-		downloadDieta.setNomeUsuario(perfil.getNome());
-		downloadDieta.setIdadeUsuario(perfil.getIdade());
-		downloadDieta.setGeneroUsuario(getGenero(perfil));
-		downloadDieta.setAlturaUsuario(perfil.getAltura());
-		downloadDieta.setPesoUsuario(perfil.getPeso());
-		downloadDieta.setEmailUsuario(perfil.getEmail());
-		downloadDieta.setStatusDieta(StatusDieta.FAZENDO);
-
-		downloadDietaDAO.inserir(downloadDieta);
-
+		return Response.ok().build();
 	}
-
-	private Genero getGenero(Perfil perfil) {
-		if(Genero.M.getDescricao().equalsIgnoreCase(perfil.getGenero())){
-			return Genero.M;
-
-		}else if(Genero.F.getDescricao().equalsIgnoreCase(perfil.getGenero())){
-
-			return Genero.F;
-		}
-		return null;
-	} 
 
 	@GET
 	@Path("/dietas/disponiveis")
 	public DietasDisponiveisXML getDietasDisponiveis(){
-		System.out.println("Voce esta no recurso /resource/mobile/dietas/disponiveis");
+		System.out.println("====================================");
+		System.out.println("RECURSO: /resource/mobile/dietas/disponiveis");
+		System.out.println("====================================");
 		IDietaDAO dietaDAO = new DietaDAO();
 		List<DietaModel> listaDietasDisponiveis = dietaDAO.encontrarTodasAsDietasDisponiveis();
 		List<DietaXML> listaDietaXML = new ArrayList<DietaXML>();

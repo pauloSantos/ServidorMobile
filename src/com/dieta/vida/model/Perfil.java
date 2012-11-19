@@ -13,6 +13,9 @@ public class Perfil {
 	public Integer idPerfil;
 	
 	@XmlElement
+	private String idDieta;
+	
+	@XmlElement
 	public String nome;
 	
 	@XmlElement
@@ -35,6 +38,12 @@ public class Perfil {
 	}
 	public void setIdPerfil(Integer idPerfil) {
 		this.idPerfil = idPerfil;
+	}
+	public String getIdDieta() {
+		return idDieta;
+	}
+	public void setIdDieta(String idDieta) {
+		this.idDieta = idDieta;
 	}
 	public String getNome() {
 		return nome;

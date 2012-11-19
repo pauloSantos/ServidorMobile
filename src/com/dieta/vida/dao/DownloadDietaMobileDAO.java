@@ -28,8 +28,6 @@ public class DownloadDietaMobileDAO extends PrincipalDAO{
 			
 		}catch(NoResultException e){
 			return null;
-		}finally{
-			getEntityManager().getEntityManagerFactory().close();
 		}
 	}
 }

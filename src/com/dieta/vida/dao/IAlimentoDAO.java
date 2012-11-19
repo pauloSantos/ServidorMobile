@@ -5,7 +5,7 @@ import java.util.List;
 import com.dieta.vida.model.AlimentoModel;
 
 
-public interface IAlimentoDAO {
+public interface IAlimentoDAO{
 
 	List<AlimentoModel> encontrarAlimentoPorIdRefeicao(Long idRefeicao);
 }
