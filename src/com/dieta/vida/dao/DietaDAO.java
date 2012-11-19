@@ -26,9 +26,12 @@ public class DietaDAO extends PrincipalDAO implements IDietaDAO{
 	public List<DietaModel> encontrarTodasAsDietasDisponiveis() {
 		Query query = getEntityManager().createQuery(ENCONTRAR_DIETAS_DISPONIVEIS);
 		try {
-			return query.getResultList();
+			List<DietaModel> dietasDisponiveis = query.getResultList();
+			return dietasDisponiveis;
 		} catch (NoResultException e) {
 			return new ArrayList<DietaModel>();
+		}finally{
+			getEntityManager().getEntityManagerFactory().close();
 		}
 	}
 	
@@ -37,9 +40,12 @@ public class DietaDAO extends PrincipalDAO implements IDietaDAO{
 		Query query = getEntityManager().createQuery(ENCONTRAR_DIETA_POR_ID);
 		query.setParameter(ID_DIETA, id);
 		try {
-			return (DietaModel) query.getSingleResult();
+			 DietaModel dieta = (DietaModel) query.getSingleResult();
+			return dieta;
 		} catch (NoResultException e) {
 			return null;
+		}finally{
+			getEntityManager().getEntityManagerFactory().close();
 		}
 	}
 }

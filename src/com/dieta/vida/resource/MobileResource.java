@@ -1,6 +1,7 @@
 package com.dieta.vida.resource;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -17,17 +18,23 @@ import javax.ws.rs.core.UriInfo;
 
 import com.dieta.vida.dao.AlimentoDAO;
 import com.dieta.vida.dao.DietaDAO;
+import com.dieta.vida.dao.DownloadDietaMobileDAO;
 import com.dieta.vida.dao.IAlimentoDAO;
 import com.dieta.vida.dao.IDietaDAO;
 import com.dieta.vida.dao.IRefeicaoDAO;
 import com.dieta.vida.dao.RefeicaoDAO;
 import com.dieta.vida.model.AlimentoModel;
 import com.dieta.vida.model.DietaModel;
+import com.dieta.vida.model.DownloadDietaModel;
+import com.dieta.vida.model.Perfil;
 import com.dieta.vida.model.RefeicaoModel;
 import com.dieta.vida.xml.AlimentoXML;
 import com.dieta.vida.xml.DietaXML;
 import com.dieta.vida.xml.DietasDisponiveisXML;
 import com.dieta.vida.xml.RefeicaoXML;
+import com.google.gson.Gson;
+import com.site.business.enums.Genero;
+import com.site.business.enums.StatusDieta;
 
 @Path("/mobile")
 public class MobileResource {
@@ -52,9 +59,9 @@ public class MobileResource {
 		DietaXML dietaXML = new DietaXML();
 		IDietaDAO dietaDAO = new DietaDAO();
 		Long idDieta = Long.parseLong(idDietaStr);
-		
+
 		DietaModel dieta = dietaDAO.encontrarDietaPorId(idDieta);
-		
+
 		if(dieta != null){
 			List<RefeicaoXML> listaRefeicaoXML = criarRefeicaoXML(dieta);
 			dietaXML.setIdentificacaoDieta(dieta.getId());
@@ -64,16 +71,59 @@ public class MobileResource {
 		}
 		return dietaXML;
 	}
-	
+
 	@POST
-	@Path("/perfil")
+	@Path("/perfil/criacao")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response gravarPerfil(String perfilJson){
 		System.out.println("====================================");
-		System.out.println("PARABENS VOCE CHEGOU ATE AQUI!!!!");
+		System.out.println("RECURSO: /resource/mobile/perfil");
 		System.out.println("====================================");
+
 		
+		
+		criarDownloadDieta(perfilJson);
+
 		return Response.ok().build();
+	}
+
+	private void criarDownloadDieta(String perfilJson) {
+		DownloadDietaMobileDAO downloadDietaDAO = new DownloadDietaMobileDAO();
+		Gson gson = new Gson();
+		Perfil perfil = gson.fromJson(perfilJson, Perfil.class);
+		
+		DownloadDietaModel downloadDietaAntigo = downloadDietaDAO.encontrarDownloadPorIdentificacaoEStatus(perfil.getIdPerfil(), StatusDieta.FAZENDO);
+		
+		if(downloadDietaAntigo != null){
+			downloadDietaAntigo.setStatusDieta(StatusDieta.NAO_FEITA);
+			downloadDietaDAO.atualizar(downloadDietaAntigo);
+		}
+		
+		DownloadDietaModel downloadDieta = new DownloadDietaModel();
+		downloadDieta.setImei(perfil.getIdPerfil());
+		downloadDieta.setDataSolicitacao(new Date());
+		downloadDieta.setDataUltimaAtualizacao(new Date());
+		downloadDieta.setNomeUsuario(perfil.getNome());
+		downloadDieta.setIdadeUsuario(perfil.getIdade());
+		downloadDieta.setGeneroUsuario(getGenero(perfil));
+		downloadDieta.setAlturaUsuario(perfil.getAltura());
+		downloadDieta.setPesoUsuario(perfil.getPeso());
+		downloadDieta.setEmailUsuario(perfil.getEmail());
+		downloadDieta.setStatusDieta(StatusDieta.FAZENDO);
+
+		downloadDietaDAO.inserir(downloadDieta);
+
+	}
+
+	private Genero getGenero(Perfil perfil) {
+		if(Genero.M.getDescricao().equalsIgnoreCase(perfil.getGenero())){
+			return Genero.M;
+
+		}else if(Genero.F.getDescricao().equalsIgnoreCase(perfil.getGenero())){
+
+			return Genero.F;
+		}
+		return null;
 	} 
 
 	@GET
@@ -83,7 +133,7 @@ public class MobileResource {
 		IDietaDAO dietaDAO = new DietaDAO();
 		List<DietaModel> listaDietasDisponiveis = dietaDAO.encontrarTodasAsDietasDisponiveis();
 		List<DietaXML> listaDietaXML = new ArrayList<DietaXML>();
-		
+
 		for (DietaModel dieta : listaDietasDisponiveis) {
 			DietaXML dietaXML = new DietaXML();
 			dietaXML.setIdentificacaoDieta(dieta.getId());
@@ -94,7 +144,7 @@ public class MobileResource {
 		dietasDisponiveisXML.setListaDietasXML(listaDietaXML);
 		return dietasDisponiveisXML;
 	}
-	
+
 	private List<RefeicaoXML> criarRefeicaoXML(DietaModel dieta) {
 		IRefeicaoDAO refeicaoDAO = new RefeicaoDAO();
 		List<RefeicaoModel> listaRefeicoes = refeicaoDAO.encontrarRefeicaoPorIdDieta(dieta.getId());
@@ -122,11 +172,5 @@ public class MobileResource {
 			listaAlimentoXML.add(alimentoXML);
 		}
 		return listaAlimentoXML;
-	}
-
-	public static void main(String[] args) {
-		IAlimentoDAO alimentoDAO = new AlimentoDAO();
-		AlimentoModel alimento = alimentoDAO.encontrarAlimentoPorId(1l);
-		System.out.println(alimento.getNomeAlimento());
 	}
 }
